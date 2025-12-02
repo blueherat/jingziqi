@@ -1,0 +1,15 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# 忽略 PyCharm 的配置文件夹
+.idea/
+
+# 忽略 VS Code 的配置文件夹 (可选，如果你不想共享你的编辑器设置)
+.vscode/
+
+# 忽略 Python 编译缓存 (那些 .pyc 文件)
+__pycache__/
+*.py[cod]
+
+# 忽略 macOS 系统垃圾文件 (如果有)
+.DS_Store

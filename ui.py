@@ -8,17 +8,16 @@ import torch
 import pickle
 import joblib
 
-# --- 模型文件路径配置 ---
-# 在这里直接指定您的模型文件路径。
-# 程序将根据这些路径自动加载模型。
+# 模型路径设置 把训练好的模型文件名放在这里
+# 运行时按算法名从这个字典里取出文件并加载
 MODEL_PATHS = {
-    "Deep TD": "deeptd_test1.pkl",  # 您的 DeepTD 模型文件
-    "Monte Carlo": "3_3_3_final_mc.pkl",  # 您的 Monte Carlo 模型文件
-    "Tabular TD": "3_3_td_50w.pkl"  # 您的 Tabular TD 模型文件
+    "Deep TD": "deeptd_test1.pkl",  # DeepTD 模型文件
+    "Monte Carlo": "3_3_3_final_mc.pkl",  # Monte Carlo 模型文件
+    "Tabular TD": "3_3_td_50w.pkl"  # Tabular TD 模型文件
 }
 # -------------------------
 
-# 尝试导入您的三个算法文件
+# 导入三个算法实现文件（若缺失会打印警告）
 try:
     import deepTD
 
@@ -44,9 +43,9 @@ except ImportError:
     print("Warning: TD.py not found.")
 
 
-# ==============================================================================
-# 1. 通用游戏核心 (Game Core) - [此部分代码与之前版本相同，保持不变]
-# ==============================================================================
+# ======================================================================
+# 1. 游戏核心 — 井字棋基本逻辑（棋盘、落子、胜负判定）
+# ======================================================================
 class TicTacToeCore:
     def __init__(self, size=3):
         self.size = size
@@ -92,9 +91,9 @@ class TicTacToeCore:
             return
 
 
-# ==============================================================================
-# 2. AI 适配器 (AI Adapters) - [此部分代码与之前版本相同，保持不变]
-# ==============================================================================
+# ======================================================================
+# 2. AI 适配器 — 为不同算法提供统一的加载与决策接口
+# ======================================================================
 class AIAdapter:
     def load_model(self, path): raise NotImplementedError
 
@@ -143,9 +142,9 @@ class TDAdapter(AIAdapter):
         return self.agent.policy_move(state, current_player, self.size)
 
 
-# ==============================================================================
-# 3. 统一图形界面 (Unified GUI) - [此部分代码已修改]
-# ==============================================================================
+# ======================================================================
+# 3. 界面部分 — 简单的 Tkinter 前端，用来和 AI 进行对弈测试
+# ======================================================================
 class UnifiedGUI:
     def __init__(self, root):
         self.root = root
@@ -157,11 +156,11 @@ class UnifiedGUI:
         self.human_side = 1
 
         self.setup_ui()
-        # *** 修改点: 程序启动时自动加载默认算法的模型 ***
+        # 启动时根据下拉框当前选择尝试加载对应模型
         self.on_algo_change()
 
     def setup_ui(self):
-        # --- 顶部控制区 ---
+        # 顶部控制区：算法选择、模型状态等
         control_frame = tk.Frame(self.root, padx=10, pady=10)
         control_frame.pack(fill=tk.X)
 
@@ -170,7 +169,7 @@ class UnifiedGUI:
         self.algo_var = tk.StringVar()
         self.algo_combo = ttk.Combobox(control_frame, textvariable=self.algo_var, state="readonly")
 
-        # *** 修改点: 动态填充下拉菜单的值 ***
+        # 根据实际可用的实现动态填充下拉列表
         available_algos = []
         if DEEPTD_AVAILABLE: available_algos.append('Deep TD')
         if MC_AVAILABLE: available_algos.append('Monte Carlo')
@@ -187,7 +186,7 @@ class UnifiedGUI:
         self.model_status_label = tk.Label(control_frame, textvariable=self.model_status_var, fg="blue")
         self.model_status_label.grid(row=1, column=0, columnspan=3, sticky=tk.W, pady=(5, 0))
 
-        # --- 中间棋盘区 ---
+        # 中间棋盘区：3x3 的按钮表示棋盘
         board_frame = tk.Frame(self.root, padx=20, pady=10)
         board_frame.pack()
 
@@ -199,7 +198,7 @@ class UnifiedGUI:
                 btn.grid(row=r, column=c, padx=2, pady=2)
                 self.buttons[r][c] = btn
 
-        # --- 底部状态与操作区 ---
+        # 底部：显示当前状态与控制按钮（重开、换方）
         bottom_frame = tk.Frame(self.root, padx=10, pady=10)
         bottom_frame.pack(fill=tk.X)
 
@@ -250,9 +249,12 @@ class UnifiedGUI:
             self.model_status_label.config(fg="red")
             self.reset_game()
 
-    # [ reset_game, switch_sides, set_board_enabled, on_click, ai_move, check_game_over, update_board_ui, highlight_winner ]
-    # 这些方法与之前版本相同，无需修改，此处为简洁省略。
-    # 请从上一版代码中复制这些方法到此处。
+    # 以下为游戏控制相关的方法：
+    # - reset_game: 重置棋盘并根据当前模型/执方决定谁先走
+    # - switch_sides: 切换人类执子方向
+    # - set_board_enabled: 启用/禁用可下格子
+    # - on_click / ai_move: 分别处理人类落子与 AI 落子流程
+    # - check_game_over / update_board_ui: 处理胜负判定与界面更新
     def reset_game(self):
         self.game.reset()
         self.update_board_ui()
